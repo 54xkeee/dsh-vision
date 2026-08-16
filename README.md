@@ -48,7 +48,7 @@ you paste an image + ask
 
 1. Install the plugin:
    ```sh
-   dsh plugin --profile web add dsh-vision
+   dsh plugin --profile web add dsh-vision-web
    ```
 2. Start the Windows bridge (drives your logged-in Chrome):
    ```sh

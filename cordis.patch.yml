@@ -10,7 +10,7 @@
 
 - insert:
     - id: vision
-      name: 'dsh-vision'
+      name: 'dsh-vision-web'
       config:
         defaultModel: gemini-3.7-flash
         defaultChannel: auto

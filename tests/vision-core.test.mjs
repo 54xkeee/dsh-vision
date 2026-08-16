@@ -21,6 +21,13 @@ async function* chunks(values) {
 	for (const value of values) yield value;
 }
 
+/** 收集异步迭代（兼容 Node 20——Array.fromAsync 是 Node 22+ API） */
+async function collect(iterable) {
+	const out = [];
+	for await (const value of iterable) out.push(value);
+	return out;
+}
+
 function recordMessage(record) {
 	return {
 		id: `message-${record.key}`,
@@ -116,7 +123,7 @@ test("legacy planning repair relabels only text immediately followed by a tool c
 		{ type: "block-end", index: 1, block: { type: "tool-call", id: "call-1", name: "vision", arguments: "{}" } },
 		{ type: "finish", reason: { kind: "tool-calls" }, replayState: { kind: "pi-ai", blocks: [{ type: "text", textSignature: "old" }, { type: "tool-call" }] } }
 	];
-	const repaired = await Array.fromAsync(repairLegacyPlanningStream(chunks(planning)));
+	const repaired = await collect(repairLegacyPlanningStream(chunks(planning)));
 	assert.equal(repaired[0].blockType, "reasoning");
 	assert.equal(repaired[1].type, "reasoning-delta");
 	assert.equal(repaired[2].block.type, "reasoning");
@@ -129,7 +136,7 @@ test("legacy planning repair relabels only text immediately followed by a tool c
 		{ type: "block-start", index: 1, blockType: "tool-call" },
 		{ type: "finish", reason: { kind: "tool-calls" } }
 	];
-	assert.deepEqual(await Array.fromAsync(repairLegacyPlanningStream(chunks(nativeReasoning))), nativeReasoning);
+	assert.deepEqual(await collect(repairLegacyPlanningStream(chunks(nativeReasoning))), nativeReasoning);
 
 	const mixedReasoning = [
 		{ type: "block-start", index: 0, blockType: "reasoning" },
@@ -138,7 +145,7 @@ test("legacy planning repair relabels only text immediately followed by a tool c
 		{ type: "block-start", index: 1, blockType: "tool-call" },
 		{ type: "finish", reason: { kind: "tool-calls" }, replayState: { kind: "pi-ai", blocks: [{ type: "text" }, { type: "tool-call" }] } }
 	];
-	const repairedMixed = await Array.fromAsync(repairLegacyPlanningStream(chunks(mixedReasoning)));
+	const repairedMixed = await collect(repairLegacyPlanningStream(chunks(mixedReasoning)));
 	assert.equal(repairedMixed[1].type, "reasoning-delta");
 	assert.equal(repairedMixed[2].block.type, "reasoning");
 	assert.deepEqual(repairedMixed.at(-1).replayState.blocks, [{ type: "reasoning" }, { type: "tool-call" }]);
@@ -149,7 +156,7 @@ test("legacy planning repair relabels only text immediately followed by a tool c
 		{ type: "block-end", index: 0, block: { type: "text", text: "final answer" } },
 		{ type: "finish", reason: { kind: "stop" } }
 	];
-	assert.deepEqual(await Array.fromAsync(repairLegacyPlanningStream(chunks(answer))), answer);
+	assert.deepEqual(await collect(repairLegacyPlanningStream(chunks(answer))), answer);
 });
 
 test("successful compaction rehydrates shadowed records, ordinary replacements do not", async () => {

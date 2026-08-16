@@ -83,6 +83,22 @@
         genlangKey: AIza...   # https://aistudio.google.com/apikey
 ```
 
+### 方式三：任意 IDE CLI（Claude Code / Gemini CLI / Qwen Code / MiMo…）
+
+如果你有编程软件的会员，用它的本地 CLI 来识图（配置驱动，无需改代码）：
+
+```yaml
+      config:
+        ideCli:
+          enabled: true
+          exe: claude                      # 或 gemini / qwen / 任意 CLI
+          argsTemplate: "-p {prompt}"      # {prompt} 替换为提问 + 图片引用
+          imageRefTemplate: "{path}"       # Gemini CLI 用 "@{path}"
+          timeoutMs: 120000
+```
+
+通道把提问 + 图片文件路径传给 CLI，stdout 即回复——Claude Code、Gemini CLI、Qwen Code、MiMo 等都用同一套配置接入。
+
 ### 使用
 
 1. **面板**：会话头部点「识图」→ 添加/粘贴图片 → 提示词 → 模式/档位/通道 → 识别。

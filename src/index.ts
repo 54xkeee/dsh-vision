@@ -26,6 +26,7 @@ import {
 	repairLegacyPlanningStream
 } from "./vision-core.ts";
 import { webVisionQueue } from "./web-channels.ts";
+import { runIdeCli } from "./ide-channels.ts";
 
 /**
  * dsh-vision — server half.
@@ -52,6 +53,7 @@ export const Config = z.object({
 	defaultChannel: z.union([
 		z.const("auto"),
 		z.const("web"),
+		z.const("ide"),
 		z.const("antigravity"),
 		z.const("genlang"),
 		z.const("cockpit"),
@@ -64,6 +66,17 @@ export const Config = z.object({
 		queuePort: z.number().default(9340),
 		// 等待网页 AI 回复超时（毫秒）
 		timeoutMs: z.number().default(240000)
+	}).default({}),
+	// 通用 IDE CLI 通道（Claude Code / Gemini CLI / Qwen Code / MiMo 等编程软件会员额度）
+	// 换一个 IDE 只需改配置：exe=可执行文件, args 模板含 {prompt}, imageRef 模板含 {path}
+	ideCli: z.object({
+		enabled: z.boolean().default(false),
+		exe: z.string().default(""),
+		// 参数模板，{prompt} 占位（如 "-p {prompt}"；Gemini CLI 图片引用用 "@{path}"）
+		argsTemplate: z.string().default("-p {prompt}"),
+		imageRefTemplate: z.string().default("{path}"),
+		timeoutMs: z.number().default(120000),
+		cwd: z.string().default("")
 	}).default({}),
 	// Gemini Developer API key (AIza... / AQ. 新格式)
 	genlangKey: z.string().default(""),
@@ -413,6 +426,22 @@ async function runVisionChannel(cfg, channel, model, prompt, images, signal) {
 			signal
 		});
 		return result.error ? result : { text: result.text };
+	}
+	if (channel === "ide") {
+		// 通用 IDE CLI（Claude Code / Gemini CLI / Qwen Code / MiMo 等会员额度）
+		if (cfg.ideCli?.enabled !== true || !cfg.ideCli?.exe) {
+			return { error: "ide 通道未启用：请在配置里设置 ideCli.enabled=true 和 ideCli.exe（IDE CLI 路径）" };
+		}
+		return await runIdeCli({
+			exe: cfg.ideCli.exe,
+			argsTemplate: cfg.ideCli.argsTemplate || "-p {prompt}",
+			imageRefTemplate: cfg.ideCli.imageRefTemplate || "{path}",
+			prompt,
+			images: images.map((img) => ({ b64: img.b64, mime: img.mime })),
+			timeoutMs: cfg.ideCli.timeoutMs || 120000,
+			cwd: cfg.ideCli.cwd || undefined,
+			signal
+		});
 	}
 	if (channel === "antigravity") return runAntigravity(cfg, model, prompt, images, signal);
 	if (channel === "genlang") return runGenlang(cfg, model, prompt, images, signal);
@@ -823,7 +852,7 @@ function registerVisionTool(ctx, cfg) {
 			detail: { type: "string", enum: ["auto", "fast", "standard", "deep"], description: "思考档位，默认 auto" },
 			mode: { type: "string", enum: ["glance", "ocr", "region", "compare"], description: "任务模式，默认 glance" },
 			region: { type: "string", description: "region 模式的区域，例如归一化坐标 0.1,0.2,0.8,0.9，或自然语言区域" },
-			channel: { type: "string", enum: ["auto", "web", "antigravity", "genlang", "cockpit"], description: "识图通道，默认 auto（配置了反重力则反重力，否则豆包 web）" }
+			channel: { type: "string", enum: ["auto", "web", "ide", "antigravity", "genlang", "cockpit"], description: "识图通道，默认 auto（配置了反重力则反重力，否则豆包 web）；ide=编程工具 CLI（Claude Code/Gemini CLI 等）" }
 		},
 		output: {
 			schema: {

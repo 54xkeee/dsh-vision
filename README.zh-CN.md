@@ -6,6 +6,8 @@
 
 <p align="center">
   <a href="https://awesome-dsh-plugin.com"><img src="https://awesome-dsh-plugin.com/badge.svg" alt="awesome · DSH plugin" /></a>
+  <a href="https://www.npmjs.com/package/dsh-vision-web"><img src="https://img.shields.io/npm/v/dsh-vision-web?style=flat-square" alt="npm version" /></a>
+  <a href="https://github.com/54xkeee/dsh-vision/actions"><img src="https://github.com/54xkeee/dsh-vision/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <img src="https://img.shields.io/badge/license-MIT-0B7285?style=flat-square" alt="MIT" />
   <img src="https://img.shields.io/badge/node-%3E%3D20-339933?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node >=20" />
   <a href="https://github.com/54xkeee/dsh-vision"><img src="https://img.shields.io/github/stars/54xkeee/dsh-vision?style=flat-square" alt="GitHub stars" /></a>

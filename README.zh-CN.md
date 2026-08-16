@@ -48,7 +48,7 @@
 
 1. 装插件：
    ```sh
-   dsh plugin --profile web add dsh-vision
+   dsh plugin --profile web add dsh-vision-web
    ```
 2. 启动 Windows 桥接（驱动你已登录的 Chrome）：
    ```sh

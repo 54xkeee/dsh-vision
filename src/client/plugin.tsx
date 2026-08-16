@@ -196,6 +196,7 @@ function VisionPanel({ t }) {
 				<select style={{ ...inputStyle, width: 170 }} value={channel} onChange={(event) => setChannel(event.target.value)}>
 					<option value="auto">{t("chAuto")}</option>
 					<option value="web">{t("chWeb")}</option>
+					<option value="ide">{t("chIde")}</option>
 					<option value="antigravity">{t("chAntigravity")}</option>
 					<option value="cockpit">{t("chCockpit")}</option>
 					<option value="genlang">{t("chGenlang")}</option>
@@ -235,6 +236,7 @@ const zh = {
 	"channel": "通道",
 	"chAuto": "自动",
 	"chWeb": "豆包 Web (免 key)",
+	"chIde": "IDE CLI (Claude/Gemini CLI 等)",
 	"chAntigravity": "反重力额度 (agentapi)",
 	"chCockpit": "Cockpit 反代",
 	"chGenlang": "Gemini API key",
@@ -274,6 +276,7 @@ const en = {
 	"channel": "Channel",
 	"chAuto": "Auto",
 	"chWeb": "Doubao Web (no key)",
+	"chIde": "IDE CLI (Claude/Gemini CLI…)",
 	"chAntigravity": "Antigravity quota (agentapi)",
 	"chCockpit": "Cockpit proxy",
 	"chGenlang": "Gemini API key",

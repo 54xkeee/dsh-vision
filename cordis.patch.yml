@@ -1,0 +1,38 @@
+# dsh-vision bundle patch: one insert over the profile tree.
+# The plugin row activates only when this package is installed as a profile
+# dependency (e.g. `dsh plugin add <package>`).
+#
+# 默认策略（开源版）：
+# - auto 通道：未配置反重力时默认走豆包 Web（零成本、免 API key、浏览器登录态即可）
+# - 配置了 antigravityWorkspace/ProjectId/LsExe 的用户 → auto 自动优先反重力（IDE 订阅额度）
+# - 降级链：antigravity/web → Gemini API（genlangKey）→ web
+# 所有 key/路径留空由用户本地填写；本地 Ollama / Gemini key 为可选增强。
+
+- insert:
+    - id: vision
+      name: 'dsh-vision'
+      config:
+        defaultModel: gemini-3.7-flash
+        defaultChannel: auto
+        # 网页版 AI 通道（豆包；默认开启，零成本）
+        webChannel:
+          enabled: true
+          queuePort: 9340
+          timeoutMs: 240000
+        # 反重力（可选；配置后 auto 优先走它，flash/pro 双档）
+        antigravityWorkspace: ''
+        antigravityProjectId: ''
+        antigravityLsExe: ''
+        antigravityWindowsHome: ''
+        antigravityBrainDir: ''
+        # Gemini API（可选降级通道）
+        genlangKey: ''
+        # Cockpit 反代（可选）
+        cockpitBaseUrl: http://127.0.0.1:65386
+        cockpitKey: ''
+        # aicode 直连（可选；需自行配置 OAuth 凭据）
+        oauthAccount: ''
+        oauthClientId: ''
+        oauthClientSecret: ''
+        # 对话流识图：包装的上游 LLM
+        visionUpstreams: ["deepseek"]

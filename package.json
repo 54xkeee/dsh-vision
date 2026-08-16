@@ -1,5 +1,5 @@
 {
-  "name": "dsh-vision",
+  "name": "dsh-vision-web",
   "version": "0.1.0",
   "description": "Eyes for text-only DeepSeek on DeepSeek Harness: image understanding via Doubao Web by default (zero cost, no API key), Antigravity IDE quota (flash/pro), Gemini API, or Cockpit proxy — model-invokable vision tool, wrapper adapters, evidence memory, and a bilingual client panel.",
   "type": "module",
@@ -64,8 +64,8 @@
     "prepublishOnly": "node build.mjs && npm test"
   },
   "devDependencies": {
-	"@deepseek-ai/dsh-llm": "0.1.0-rc.6",
-	"@deepseek-ai/dsh-tools": "0.1.0-rc.6",
+    "@deepseek-ai/dsh-llm": "0.1.0-rc.6",
+    "@deepseek-ai/dsh-tools": "0.1.0-rc.6",
     "@deepseek-ai/schemastery": "^3.18.1",
     "@types/react": "^18.3.1",
     "esbuild": "^0.24.0",

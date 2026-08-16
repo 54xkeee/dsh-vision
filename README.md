@@ -83,6 +83,22 @@ Ports/CSRF are auto-discovered on every call — no manual config after IDE rest
         genlangKey: AIza...   # https://aistudio.google.com/apikey
 ```
 
+### Path 3: Any IDE CLI (Claude Code / Gemini CLI / Qwen Code / MiMo…)
+
+If you have a subscription to a coding IDE, use its local CLI for recognition (config-driven, no code changes):
+
+```yaml
+      config:
+        ideCli:
+          enabled: true
+          exe: claude                      # or gemini / qwen / any CLI
+          argsTemplate: "-p {prompt}"      # {prompt} replaced with the question + image refs
+          imageRefTemplate: "{path}"       # Gemini CLI: "@{path}"
+          timeoutMs: 120000
+```
+
+The channel passes the question plus image file paths to the CLI and takes stdout as the answer — Claude Code, Gemini CLI, Qwen Code, MiMo and similar all work through the same config block.
+
 ### Usage
 
 1. **Panel**: click 「识图」 in the session header → add/paste images → prompt → mode/detail/channel → recognize.

@@ -1,0 +1,87 @@
+{
+  "name": "dsh-vision",
+  "version": "0.1.0",
+  "description": "Eyes for text-only DeepSeek on DeepSeek Harness: image understanding via Doubao Web by default (zero cost, no API key), Antigravity IDE quota (flash/pro), Gemini API, or Cockpit proxy — model-invokable vision tool, wrapper adapters, evidence memory, and a bilingual client panel.",
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/types/client.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "src",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh-CN.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek",
+    "deepseek-harness",
+    "plugin",
+    "vision",
+    "image",
+    "image-understanding",
+    "image-recognition",
+    "multimodal",
+    "ocr",
+    "vlm",
+    "doubao",
+    "gemini",
+    "antigravity"
+  ],
+  "engines": {
+    "node": ">=20",
+    "dsh": ">=0.1.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ],
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "prepublishOnly": "node build.mjs && npm test"
+  },
+  "devDependencies": {
+	"@deepseek-ai/dsh-llm": "0.1.0-rc.6",
+	"@deepseek-ai/dsh-tools": "0.1.0-rc.6",
+    "@deepseek-ai/schemastery": "^3.18.1",
+    "@types/react": "^18.3.1",
+    "esbuild": "^0.24.0",
+    "react": "^18.2.0",
+    "typescript": "^5.6.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/54xkeee/dsh-vision.git"
+  },
+  "homepage": "https://github.com/54xkeee/dsh-vision",
+  "bugs": {
+    "url": "https://github.com/54xkeee/dsh-vision/issues"
+  },
+  "allowScripts": {
+    "esbuild@0.24.2": true
+  }
+}

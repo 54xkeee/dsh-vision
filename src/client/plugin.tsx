@@ -86,17 +86,30 @@ function readImage(file) {
 	});
 }
 
+/** 通道预置：自动（反重力优先/豆包默认）/ 豆包 / IDE CLI / 反重力 / Cockpit / Gemini / aicode */
+const CHANNELS = [
+	{ value: "auto", labelKey: "chAuto", modelKey: "modelAuto" },
+	{ value: "web", labelKey: "chWeb", modelKey: "modelWeb" },
+	{ value: "ide", labelKey: "chIde", modelKey: "modelIde" },
+	{ value: "antigravity", labelKey: "chAntigravity", modelKey: "modelAntigravity" },
+	{ value: "cockpit", labelKey: "chCockpit", modelKey: "modelCockpit" },
+	{ value: "genlang", labelKey: "chGenlang", modelKey: "modelGenlang" },
+	{ value: "aicode", labelKey: "chAicode", modelKey: "modelAicode" }
+];
+
 function VisionPanel({ t }) {
 	const rootRef = useRef(null);
 	const fileRef = useRef(null);
 	const [images, setImages] = useState([]);
 	const [prompt, setPrompt] = useState(t("defaultPrompt"));
 	const [channel, setChannel] = useState("auto");
+	const [model, setModel] = useState("");
 	const [detail, setDetail] = useState("auto");
 	const [mode, setMode] = useState("glance");
 	const [region, setRegion] = useState("");
 	const [busy, setBusy] = useState(false);
 	const [text, setText] = useState("");
+	const [meta, setMeta] = useState("");
 	const [error, setError] = useState("");
 
 	const onFiles = async (files) => {
@@ -121,6 +134,7 @@ function VisionPanel({ t }) {
 		setBusy(true);
 		setError("");
 		setText("");
+		setMeta("");
 		try {
 			const res = await fetch("/api/vision", {
 				method: "POST",
@@ -129,6 +143,7 @@ function VisionPanel({ t }) {
 					images: images.map(({ b64, mime, name }) => ({ image: b64, mime, name })),
 					prompt,
 					channel,
+					...(model.trim() ? { model: model.trim() } : {}),
 					detail,
 					mode,
 					region
@@ -137,12 +152,18 @@ function VisionPanel({ t }) {
 			const body = await res.json();
 			if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
 			setText(body.text);
+			const parts = [body.channel, body.model].filter(Boolean);
+			if (body.cache_hit) parts.push("cache");
+			if (body.escalated) parts.push("escalated");
+			setMeta(parts.join(" · "));
 		} catch (cause) {
 			setError(String(cause?.message || cause));
 		} finally {
 			setBusy(false);
 		}
 	};
+
+	const currentChannel = CHANNELS.find((c) => c.value === channel) || CHANNELS[0];
 
 	return (
 		<div style={panelStyle} ref={rootRef} onPaste={(event) => {
@@ -173,41 +194,42 @@ function VisionPanel({ t }) {
 				</div>
 			) : <div style={{ ...rowStyle, marginTop: 6 }}><span style={labelStyle}>{t("hintPaste")}</span></div>}
 			<textarea rows={2} style={{ ...inputStyle, marginTop: 8 }} value={prompt} onChange={(event) => setPrompt(event.target.value)} />
-			<div style={rowStyle}><span style={labelStyle}>{t("model")}: gemini-3.7-flash</span></div>
+			<div style={rowStyle}>
+				<span style={labelStyle}>{t("channel")}</span>
+				<select style={{ ...inputStyle, width: 190 }} value={channel} onChange={(event) => { setChannel(event.target.value); setMeta(""); }}>
+					{CHANNELS.map((c) => <option key={c.value} value={c.value}>{t(c.labelKey)}</option>)}
+				</select>
+				<span style={{ ...labelStyle, marginLeft: 4 }}>{t("modelHint")}</span>
+				<input style={{ ...inputStyle, width: 100 }} value={model} placeholder={t(currentChannel?.modelKey)} onChange={(event) => setModel(event.target.value)} />
+			</div>
 			<div style={rowStyle}>
 				<span style={labelStyle}>{t("mode")}</span>
-				<select style={{ ...inputStyle, width: 170 }} value={mode} onChange={(event) => setMode(event.target.value)}>
+				<select style={{ ...inputStyle, width: 150 }} value={mode} onChange={(event) => setMode(event.target.value)}>
 					<option value="glance">{t("modeGlance")}</option>
 					<option value="ocr">{t("modeOcr")}</option>
 					<option value="region">{t("modeRegion")}</option>
 					<option value="compare">{t("modeCompare")}</option>
 				</select>
 				<span style={labelStyle}>{t("detail")}</span>
-				<select style={{ ...inputStyle, width: 145 }} value={detail} onChange={(event) => setDetail(event.target.value)}>
+				<select style={{ ...inputStyle, width: 130 }} value={detail} onChange={(event) => setDetail(event.target.value)}>
 					<option value="auto">{t("detailAuto")}</option>
 					<option value="fast">{t("detailFast")}</option>
 					<option value="standard">{t("detailStandard")}</option>
 					<option value="deep">{t("detailDeep")}</option>
 				</select>
-			</div>
-			{mode === "region" ? <input style={{ ...inputStyle, marginTop: 8 }} value={region} placeholder={t("regionPlaceholder")} onChange={(event) => setRegion(event.target.value)} /> : null}
-			<div style={rowStyle}>
-				<span style={labelStyle}>{t("channel")}</span>
-				<select style={{ ...inputStyle, width: 170 }} value={channel} onChange={(event) => setChannel(event.target.value)}>
-					<option value="auto">{t("chAuto")}</option>
-					<option value="web">{t("chWeb")}</option>
-					<option value="ide">{t("chIde")}</option>
-					<option value="antigravity">{t("chAntigravity")}</option>
-					<option value="cockpit">{t("chCockpit")}</option>
-					<option value="genlang">{t("chGenlang")}</option>
-					<option value="aicode">{t("chAicode")}</option>
-				</select>
 				<button type="button" disabled={busy || !images.length} style={{ ...btnStyle, minHeight: 30, marginLeft: "auto", background: "var(--dsw-alias-state-primary)", color: "#fff" }} onClick={run}>
 					{busy ? t("running") : t("run")}
 				</button>
 			</div>
+			{mode === "region" ? <input style={{ ...inputStyle, marginTop: 8 }} value={region} placeholder={t("regionPlaceholder")} onChange={(event) => setRegion(event.target.value)} /> : null}
 			{error ? <div style={errStyle}>{error}</div> : null}
-			{text ? <div><div style={resultStyle}>{text}</div><button type="button" style={{ ...btnStyle, marginTop: 6 }} onClick={() => navigator.clipboard?.writeText(text)}>{t("copy")}</button></div> : null}
+			{text ? (
+				<div>
+					{meta ? <div style={{ ...labelStyle, marginTop: 6 }}>{meta}</div> : null}
+					<div style={resultStyle}>{text}</div>
+					<button type="button" style={{ ...btnStyle, marginTop: 6 }} onClick={() => navigator.clipboard?.writeText(text)}>{t("copy")}</button>
+				</div>
+			) : null}
 		</div>
 	);
 }
@@ -234,6 +256,14 @@ const zh = {
 	"detailStandard": "标准",
 	"detailDeep": "深度",
 	"channel": "通道",
+	"modelHint": "模型",
+	"modelAuto": "自动",
+	"modelWeb": "豆包",
+	"modelIde": "IDE CLI",
+	"modelAntigravity": "gemini-3.7-flash",
+	"modelCockpit": "gemini-3.7-flash",
+	"modelGenlang": "gemini-3.7-flash",
+	"modelAicode": "gemini-3.7-flash",
 	"chAuto": "自动",
 	"chWeb": "豆包 Web (免 key)",
 	"chIde": "IDE CLI (Claude/Gemini CLI 等)",
@@ -274,6 +304,14 @@ const en = {
 	"detailStandard": "Standard",
 	"detailDeep": "Deep",
 	"channel": "Channel",
+	"modelHint": "Model",
+	"modelAuto": "auto",
+	"modelWeb": "doubao",
+	"modelIde": "IDE CLI",
+	"modelAntigravity": "gemini-3.7-flash",
+	"modelCockpit": "gemini-3.7-flash",
+	"modelGenlang": "gemini-3.7-flash",
+	"modelAicode": "gemini-3.7-flash",
 	"chAuto": "Auto",
 	"chWeb": "Doubao Web (no key)",
 	"chIde": "IDE CLI (Claude/Gemini CLI…)",
